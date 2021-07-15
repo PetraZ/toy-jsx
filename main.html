@@ -1,0 +1,55 @@
+<body></body>
+<script src="./htmlParser.js"></script>
+<script>
+
+
+    // JSX stands for JavaScript XML is an extension to the JavaScript language syntax.
+
+
+    let names = ["Peter", "Yann"]
+
+
+    // this is what we write typically with react though jsx support native type not string type
+    // to illustrate the idea, we used string type here
+    let str = `<div class=nameList>
+    <div>{names[0]}</div>
+    <div>{names[1]}</div>
+</div>`
+
+    let parser = new HTMLParser()
+
+    // the structure of vdom can vary, depends on how you transpile stuff
+    // jsx -> vdom
+    let vdom = parser.parse(str)
+    console.log(vdom)
+
+    let evalRegex = /{.*}/
+
+    function render(vnode) {
+        // Strings just convert to #text Nodes:
+        if (vnode.type === "text") {
+            let value = vnode.value
+            if (value.match(evalRegex)) {
+                value = eval(vnode.value)
+            }
+            return document.createTextNode(value);
+        }
+
+        // create a DOM element with the nodeName of our VDOM element:
+        let n = document.createElement(vnode.tagName);
+
+        // copy attributes onto the new node:
+        let attLst = vnode.attributes || {};
+        attLst.forEach(k => n.setAttribute(k.name, k.value));
+
+        // render (build) and then append child nodes:
+        (vnode.children || []).forEach(c => n.appendChild(render(c)));
+
+        return n;
+    }
+
+    //vdom -> dom
+    let dom = render(vdom.children[0]);
+    console.log(dom)
+    document.body.appendChild(dom)
+</script>
